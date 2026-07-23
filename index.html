@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!-- LIT Tanzania — Overlap Dashboard -->
 <meta charset="utf-8"/>
 <title>LIT Tanzania — Overlap Dashboard</title>
@@ -376,3 +377,143 @@ d3.select('#footnote').html(
   `Figures reflect the current data, so a few differ from the demo screenshot (districts ${nDist} vs 24, Headteachers load 4 vs 3) because the demo used an earlier cut. `+
   `On the map, amber marks the four Zanzibar regions with no programme presence (0 partners); the teal shades show 1, 2 and 3 partners.`);
 </script>
+=======
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIT Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #111; background: #f8f9fb; }
+    h1 { margin-bottom: 8px; }
+    p { margin: 8px 0; }
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+    .controls button, .controls input, .controls select { font: inherit; padding: 10px 12px; border: 1px solid #bbb; border-radius: 6px; background: #fff; }
+    .status { margin-bottom: 18px; color: #334; }
+    #summary { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px; max-width: 760px; margin-bottom: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f1f5f9; position: sticky; top: 0; }
+    .table-wrapper { max-height: 520px; overflow: auto; border: 1px solid #ddd; border-radius: 10px; background: #fff; }
+    .note { color: #555; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>LIT Dashboard</h1>
+  <p>Data is loaded from the workbook <code>LIT schools summary.xlsx</code> in this folder.</p>
+  <div class="controls">
+    <button id="reloadBtn">Reload workbook</button>
+    <label>
+      Open local workbook:
+      <input type="file" id="fileInput" accept=".xlsx,.xls" />
+    </label>
+    <label>
+      Sheet:
+      <select id="sheetSelect"></select>
+    </label>
+  </div>
+  <div id="status" class="status">Loading workbook...</div>
+  <div id="summary"></div>
+  <div class="table-wrapper"><div id="tableContainer"></div></div>
+  <p class="note">If you publish this folder to GitHub Pages, the page can load the workbook from the same repository automatically.</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.2/dist/xlsx.full.min.js"></script>
+  <script>
+    const workbookUrl = 'LIT schools summary.xlsx';
+    const statusEl = document.getElementById('status');
+    const sheetSelect = document.getElementById('sheetSelect');
+    const tableContainer = document.getElementById('tableContainer');
+    const summaryEl = document.getElementById('summary');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const fileInput = document.getElementById('fileInput');
+    let workbook;
+    let currentSheet;
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.style.color = isError ? '#a00' : '#334';
+    }
+
+    function arrayToTable(data) {
+      if (!data || data.length === 0) return '<p>No rows to display.</p>';
+      const headers = data[0];
+      const rows = data.slice(1);
+      let html = '<table><thead><tr>' + headers.map(h => `<th>${String(h || '').replace(/</g, '&lt;')}</th>`).join('') + '</tr></thead><tbody>';
+      rows.forEach(row => {
+        html += '<tr>' + headers.map((_, idx) => `<td>${String(row[idx] ?? '').replace(/</g, '&lt;')}</td>`).join('') + '</tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function renderSummary(sheetName, data) {
+      const rowCount = data.length > 1 ? data.length - 1 : 0;
+      const colCount = data[0] ? data[0].length : 0;
+      summaryEl.innerHTML = `
+        <strong>Sheet:</strong> ${sheetName}<br>
+        <strong>Rows:</strong> ${rowCount}<br>
+        <strong>Columns:</strong> ${colCount}
+      `;
+    }
+
+    function renderSheet(sheetName) {
+      if (!workbook || !sheetName) return;
+      currentSheet = sheetName;
+      const worksheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      renderSummary(sheetName, data);
+      tableContainer.innerHTML = arrayToTable(data.slice(0, 101));
+      setStatus(`Loaded ${sheetName}. Displaying first ${Math.min(data.length - 1, 100)} rows.`);
+    }
+
+    function fillSheetSelector(names) {
+      sheetSelect.innerHTML = '';
+      names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        sheetSelect.appendChild(option);
+      });
+      sheetSelect.addEventListener('change', () => renderSheet(sheetSelect.value));
+    }
+
+    async function loadWorkbookFromUrl(url) {
+      setStatus('Fetching workbook from repository...');
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const arrayBuffer = await response.arrayBuffer();
+        workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        fillSheetSelector(workbook.SheetNames);
+        renderSheet(workbook.SheetNames[0]);
+      } catch (error) {
+        setStatus(`Unable to load workbook from ${url}: ${error.message}`, true);
+      }
+    }
+
+    function loadWorkbookFromFile(file) {
+      setStatus('Reading workbook from selected file...');
+      const reader = new FileReader();
+      reader.onload = () => {
+        workbook = XLSX.read(new Uint8Array(reader.result), { type: 'array' });
+        fillSheetSelector(workbook.SheetNames);
+        renderSheet(workbook.SheetNames[0]);
+      };
+      reader.onerror = () => {
+        setStatus('Failed to read the selected file.', true);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    reloadBtn.addEventListener('click', () => loadWorkbookFromUrl(workbookUrl));
+    fileInput.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (file) loadWorkbookFromFile(file);
+    });
+
+    loadWorkbookFromUrl(workbookUrl);
+  </script>
+</body>
+</html>
+>>>>>>> 5da90cb (Add index.html, README and workbook for dashboard)

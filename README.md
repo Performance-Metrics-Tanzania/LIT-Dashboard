@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # LIT Tanzania — Overlap Dashboard
 
 A single-file interactive dashboard showing where four partners (Educate!, TEN/MET, TeachUNITED, ACSL/VVOB) operate across Tanzania: a regional map, scorecards, partner reach, shared-school overlaps and stakeholder engagement.
@@ -37,3 +38,30 @@ The data is embedded directly in `index.html` (in two JavaScript variables near 
 
 - Works in any modern browser; no internet connection is required once the page has loaded (D3 is embedded).
 - The four Zanzibar regions with no programme data appear amber ("not in programme"); the teal shades show 1, 2 and 3 partners.
+=======
+# LIT Dashboard Test
+
+This folder includes:
+
+- `index.html` — a static dashboard page that loads `LIT schools summary.xlsx`
+- `LIT schools summary.xlsx` — the workbook used as the data source
+
+## How it works
+
+The page uses SheetJS in the browser to fetch and parse the workbook file from the same folder.
+
+## Hosting on GitHub Pages
+
+1. Create a GitHub repository and push this folder to it.
+2. Make sure `index.html` and `LIT schools summary.xlsx` are committed.
+3. In the repository settings, enable GitHub Pages using the `main` branch and the root folder.
+4. Visit the published URL, for example:
+   - `https://<username>.github.io/<repository-name>/`
+
+The dashboard will then load the workbook data directly from the repo.
+
+## Notes
+
+- If you use GitHub Pages, the browser can fetch `LIT schools summary.xlsx` from the same site.
+- If you open `index.html` locally via `file:///`, the workbook fetch may fail due to browser local file restrictions. Use GitHub Pages or a local HTTP server instead.
+>>>>>>> 5da90cb (Add index.html, README and workbook for dashboard)
