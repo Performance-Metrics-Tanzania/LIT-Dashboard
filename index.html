@@ -39,7 +39,15 @@ body{margin:0;background:var(--paper);color:#132D26;
 .card.clickable{cursor:pointer;transition:box-shadow .15s,border-color .15s;}
 .card.clickable:hover{border-color:#b9c6c1;box-shadow:0 3px 10px rgba(0,0,0,.08);}
 .card.active{border-color:#4FA58C;box-shadow:0 0 0 2px rgba(79,165,140,.35);}
-.card .more{font-size:10px;color:#8aa39b;margin-top:6px;font-weight:600;}
+.card .more{font-size:10px;color:#1B6E5A;background:#EAF2EE;display:inline-block;margin-top:8px;padding:2px 9px;border-radius:10px;font-weight:700;}
+.updated{display:inline-block;background:#1B6E5A;color:#fff;font-weight:700;font-size:12px;padding:5px 13px;border-radius:20px;margin:0 0 14px;letter-spacing:.01em;}
+.tbl-more{padding:10px;text-align:center;font-weight:700;font-size:12.5px;color:#2E6FB0;cursor:pointer;border-top:1px solid var(--line2);background:#F7FAF9;}
+.tbl-more:hover{background:#EEF5F2;}
+.tctl{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:11px 14px;border-bottom:1px solid var(--line2);background:#F7FAF9;}
+.tctl input,.tctl select{font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:6px 9px;color:#132D26;background:#fff;}
+.tctl input{min-width:170px;}
+.tctl input:focus,.tctl select:focus{outline:none;border-color:#4FA58C;}
+.tctl .lbl{font-size:11px;color:var(--muted);font-weight:700;}
 .drill{display:none;margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;}
 .drill h3{margin:0 0 3px;font-size:16px;color:var(--ink);}
 .drill .sub2{font-size:12px;color:var(--muted);margin-bottom:10px;}
@@ -51,7 +59,7 @@ body{margin:0;background:var(--paper);color:#132D26;
 .dtable td{padding:7px 10px;border-bottom:1px solid var(--line2);}
 .dtable tr.click{cursor:pointer;} .dtable tr.click:hover td{background:#EEF5F2;}
 .dtable tr.totalrow td{font-weight:800;background:#EAF2EE;}
-.pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;background:#EAF2EE;color:#1B6E5A;}
+.cpill{display:inline-block;font-size:11px;font-weight:800;padding:1px 8px;border-radius:10px;background:#DDEBE5;color:#134E40;}
 
 .section-h{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px;gap:12px;}
 .section-h h2{font-size:16px;margin:0;font-weight:800;letter-spacing:-.01em;color:var(--ink);}
@@ -194,8 +202,17 @@ svg{display:block;width:100%;height:auto;}
   </div>
 
   <div class="hr"></div>
+  <div class="updated">Data update is still in progress: July 2026</div>
   <div class="cards" id="cards"></div>
   <div class="drill" id="drill"></div>
+
+  <div class="hr"></div>
+  <div class="section-h"><h2>Coverage by region</h2><span class="k">districts &amp; schools by number of partners</span></div>
+  <div id="regTablePanel" class="panel" style="padding:0;overflow:hidden"></div>
+
+  <div class="hr"></div>
+  <div class="section-h"><h2>Coverage by district</h2><span class="k">schools by number of partners</span></div>
+  <div id="distTablePanel" class="panel" style="padding:0;overflow:hidden"></div>
 
   <div class="hr"></div>
   <div class="section-h"><h2>Regional footprint</h2><span class="k">Filter by partner count, or select partners to find where they co-exist</span></div>
@@ -345,26 +362,26 @@ d3.select('#cards').selectAll('.card').data(cards).join('div').attr('class','car
   }
   const render={
     partners(){
-      const rows=ORDER.map(p=>({_cls:'click',p,cells:[`<b>${esc(p)}</b>`,`<span class="pill">${SDOTS.filter(d=>d.p.includes(p)).length}</span>`,'view schools ▸']}));
+      const rows=ORDER.map(p=>({_cls:'click',p,cells:[`<b>${esc(p)}</b>`,`<span class="cpill">${SDOTS.filter(d=>d.p.includes(p)).length}</span>`,'view schools ▸']}));
       show(head('Partners — schools supported','Click a partner to see the schools it supports.')+tbl(['Partner','Schools','',],rows));
       d3.selectAll('#drill tbody, #drill tr.click').each(function(){});
       d3.select('#drill').selectAll('tr.click').data(ORDER).on('click',(ev,p)=>partnerList(p));
     },
     stakeholders(){
       const rows=DATA.stakeholders.map(s=>{const eng=ORDER.filter(n=>s.engagement && s.engagement[n]);
-        return {cells:[`<b>${esc(s.stakeholder)}</b>`,`<span class="pill">${eng.length}</span>`,eng.map(esc).join(', ')||'—']};})
+        return {cells:[`<b>${esc(s.stakeholder)}</b>`,`<span class="cpill">${eng.length}</span>`,eng.map(esc).join(', ')||'—']};})
         .sort((a,b)=>a.cells[0].localeCompare(b.cells[0]));
       show(head('Stakeholders engaged',`${DATA.stakeholders.length} stakeholder groups and which partners engage them.`)+tbl(['Stakeholder','# partners','Engaged by'],rows));
     },
     regions(){
       const rows=DATA.regions.slice().sort((a,b)=>(b.partners_present||0)-(a.partners_present||0)||a.region.localeCompare(b.region))
-        .map(r=>({cells:[`<b>${esc(r.region)}</b>`,`<span class="pill">${r.partners_present||0}</span>`,(r.present||[]).map(esc).join(', ')||'—']}));
+        .map(r=>({cells:[`<b>${esc(r.region)}</b>`,`<span class="cpill">${r.partners_present||0}</span>`,(r.present||[]).map(esc).join(', ')||'—']}));
       show(head('Regions — partners present',`All ${DATA.regions.length} programme regions with the number of partners working there.`)+tbl(['Region','# partners','Partners'],rows));
     },
     districts(){
       const rows=GEO_D.features.map(f=>f.properties).slice()
         .sort((a,b)=>(b.present||0)-(a.present||0)||(a.region||'').localeCompare(b.region||'')||a.district.localeCompare(b.district))
-        .map(p=>({cells:[`<b>${esc(p.district)}</b>`,esc(p.region),`<span class="pill">${p.present||0}</span>`,ORDER.filter(n=>p[KEYP[n]]>0).map(esc).join(', ')||'—']}));
+        .map(p=>({cells:[`<b>${esc(p.district)}</b>`,esc(p.region),`<span class="cpill">${p.present||0}</span>`,ORDER.filter(n=>p[KEYP[n]]>0).map(esc).join(', ')||'—']}));
       show(head('Districts — partners present',`All ${rows.length} districts with the number of partners working there.`)+tbl(['District','Region','# partners','Partners'],rows));
     },
     shared(){
@@ -387,6 +404,67 @@ d3.select('#cards').selectAll('.card').data(cards).join('div').attr('class','car
     openKey=d.key; d3.selectAll('#cards .card').classed('active',false); d3.select(this).classed('active',true);
     render[d.key]();
   });
+})();
+
+/* ---- coverage tables (region + district) with filters ---- */
+(function(){
+  const pct=(x,t)=>t?Math.round(100*x/t):0;
+  const regS={},regD={};
+  SDOTS.forEach(d=>{const a=regS[d.r]||(regS[d.r]={t:0,s0:0,s1:0,s2:0}); a.t++; a['s'+(d.k>=2?2:d.k)]++;});
+  GEO_D.features.forEach(f=>{const p=f.properties; const a=regD[p.region]||(regD[p.region]={t:0,d0:0,d1:0,d2:0}); a.t++; a['d'+Math.min(p.present||0,2)]++;});
+  const regions=[...new Set([...Object.keys(regS),...Object.keys(regD)])];
+  function rrow(name,S,D){const cov=S.t?(S.s1+S.s2)/S.t:0; return {name,region:name,cov,sTot:S.t,s0p:pct(S.s0,S.t),cells:[
+    `<b>${name}</b>`,D.t,pct(D.d0,D.t)+'%',pct(D.d1,D.t)+'%',pct(D.d2,D.t)+'%',S.t,pct(S.s0,S.t)+'%',pct(S.s1,S.t)+'%',pct(S.s2,S.t)+'%']};}
+  const rrows=regions.map(r=>rrow(r,regS[r]||{t:0,s0:0,s1:0,s2:0},regD[r]||{t:0,d0:0,d1:0,d2:0}));
+  const oS={t:0,s0:0,s1:0,s2:0},oD={t:0,d0:0,d1:0,d2:0};
+  Object.values(regS).forEach(a=>{oS.t+=a.t;oS.s0+=a.s0;oS.s1+=a.s1;oS.s2+=a.s2;});
+  Object.values(regD).forEach(a=>{oD.t+=a.t;oD.d0+=a.d0;oD.d1+=a.d1;oD.d2+=a.d2;});
+  covTable({sel:'#regTablePanel',noun:'regions',limit:10,searchLabel:'Search region',regionFilter:false,
+    cols:['Region','Total districts','% districts w/o partner','% with 1 partner','% with 2 partners','Total schools','% schools w/o partner','% with 1 partner','% with 2 partners'],
+    overall:rrow('All regions',oS,oD), rows:rrows});
+
+  const P=['Educate!','TEN/MET','TeachUNITED','ACSL/VVOB'];
+  const distS={};
+  SDOTS.forEach(d=>{const key=d.r+'||'+d.d; const a=distS[key]||(distS[key]={r:d.r,d:d.d,t:0,s0:0,s1:0,s2:0,pp:{}}); a.t++; a['s'+(d.k>=2?2:d.k)]++; d.p.forEach(p=>a.pp[p]=(a.pp[p]||0)+1);});
+  function drow(a){const cov=a.t?(a.s1+a.s2)/a.t:0; return {name:a.d,region:a.r,cov,sTot:a.t,s0p:pct(a.s0,a.t),
+    cells:[`<b>${a.d}</b>`,a.t,pct(a.s0,a.t)+'%',pct(a.s1,a.t)+'%',pct(a.s2,a.t)+'%',...P.map(p=>`${a.pp[p]||0} (${pct(a.pp[p]||0,a.t)}%)`)]};}
+  const drows=Object.values(distS).map(drow);
+  const od={r:'',d:'All districts',t:0,s0:0,s1:0,s2:0,pp:{}};
+  Object.values(distS).forEach(a=>{od.t+=a.t;od.s0+=a.s0;od.s1+=a.s1;od.s2+=a.s2; P.forEach(p=>od.pp[p]=(od.pp[p]||0)+(a.pp[p]||0));});
+  covTable({sel:'#distTablePanel',noun:'districts',limit:10,searchLabel:'Search district',regionFilter:true,
+    cols:['District','Total schools','% schools w/o partner','% with 1 partner','% with 2 partners','Educate!','TEN/MET','TeachUNITED','ACSL/VVOB'],
+    overall:drow(od), rows:drows});
+
+  function covTable(o){
+    const sorts=[
+      {label:'Lowest coverage first',fn:(a,b)=>a.cov-b.cov},
+      {label:'Highest coverage first',fn:(a,b)=>b.cov-a.cov},
+      {label:'Most schools without partner',fn:(a,b)=>b.s0p-a.s0p},
+      {label:'Most schools',fn:(a,b)=>b.sTot-a.sTot},
+      {label:'Name (A–Z)',fn:(a,b)=>a.name.localeCompare(b.name)},
+    ];
+    let q='',si=0,reg='',expanded=false;
+    const regionOpts=o.regionFilter?[...new Set(o.rows.map(r=>r.region))].sort():[];
+    function draw(){
+      let rows=o.rows.filter(r=>(!q||r.name.toLowerCase().includes(q))&&(!reg||r.region===reg)).sort(sorts[si].fn);
+      const total=rows.length, shown=expanded?rows:rows.slice(0,o.limit);
+      const ctl=`<div class="tctl">
+        <input type="text" id="q_${o.noun}" placeholder="${o.searchLabel}…" value="${q}">
+        ${o.regionFilter?`<span class="lbl">Region</span><select id="rf_${o.noun}"><option value="">All regions</option>${regionOpts.map(r=>`<option${r===reg?' selected':''}>${r}</option>`).join('')}</select>`:''}
+        <span class="lbl">Sort</span><select id="so_${o.noun}">${sorts.map((s,i)=>`<option value="${i}"${i===si?' selected':''}>${s.label}</option>`).join('')}</select>
+        <span class="lbl" style="margin-left:auto">${total} ${o.noun}</span></div>`;
+      const body=(o.overall&&!q&&!reg?`<tr class="totalrow">${o.overall.cells.map(c=>`<td>${c}</td>`).join('')}</tr>`:'')+
+        shown.map(r=>`<tr>${r.cells.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+      const foot=total>o.limit?`<div class="tbl-more">${expanded?'▲ Show fewer':`▼ View all ${total} ${o.noun}`}</div>`:'';
+      d3.select(o.sel).html(ctl+`<div class="dtable-wrap" style="max-height:${expanded?'520px':'none'};border:0"><table class="dtable"><thead><tr>${o.cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`+foot);
+      const root=d3.select(o.sel);
+      root.select('#q_'+o.noun).on('input',function(){q=this.value.toLowerCase().trim(); expanded=false; draw(); const el=document.getElementById('q_'+o.noun); if(el){el.focus(); el.setSelectionRange(el.value.length,el.value.length);} });
+      root.select('#so_'+o.noun).on('change',function(){si=+this.value; draw();});
+      if(o.regionFilter) root.select('#rf_'+o.noun).on('change',function(){reg=this.value; expanded=false; draw();});
+      root.select('.tbl-more').on('click',()=>{expanded=!expanded; draw();});
+    }
+    draw();
+  }
 })();
 
 /* ---- filters ---- */
@@ -448,13 +526,17 @@ function barChart(sel,rows,opts){opts=opts||{};const mx=d3.max(rows,d=>d.val);
   d3.select(sel).selectAll('.bar-row').data(rows).join('div').attr('class','bar-row'+(opts.hideVal?' noval':''))
     .html(d=>`<div class="lab" title="${d.lab}">${d.lab}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,100*d.val/mx)}%;background:${d.color}"></div></div>
-      ${opts.hideVal?'':`<div class="val">${d.val}</div>`}`);}
+      ${opts.hideVal?'':`<div class="val">${d.disp!=null?d.disp:d.val}</div>`}`);}
 
-/* Partner reach */
-barChart('#reachChart',DATA.ngos.map(n=>({lab:n,val:DATA.agg.ngo_reach[n],color:NGO_HEX[n]})).sort((a,b)=>b.val-a.val));
-d3.select('#reachChart').append('div').attr('class','mini').style('margin-top','8px')
-  .html([...DATA.ngos].sort((a,b)=>DATA.agg.ngo_reach[b]-DATA.agg.ngo_reach[a])
-    .map(n=>`${n}: ${DATA.agg.ngo_regions[n]} region${DATA.agg.ngo_regions[n]>1?'s':''}`).join('  ·  '));
+/* Partner reach — registry school counts with % of all schools */
+(function(){const TOT=SDOTS.length;
+  const reach=DATA.ngos.map(n=>{const v=SDOTS.filter(d=>d.p.includes(n)).length;
+    return {lab:n,val:v,disp:`${v} (${Math.round(100*v/TOT)}%)`,color:NGO_HEX[n]};}).sort((a,b)=>b.val-a.val);
+  barChart('#reachChart',reach);
+  d3.select('#reachChart').append('div').attr('class','mini').style('margin-top','8px')
+    .html([...DATA.ngos].sort((a,b)=>DATA.agg.ngo_regions[b]-DATA.agg.ngo_regions[a])
+      .map(n=>`${n}: ${DATA.agg.ngo_regions[n]} region${DATA.agg.ngo_regions[n]>1?'s':''}`).join('  ·  '));
+})();
 
 /* pair chart — readable full labels (#2) */
 (function(){
@@ -472,15 +554,15 @@ d3.select('#reachChart').append('div').attr('class','mini').style('margin-top','
 
 /* shared schools by region — name label, value on right, blue bars (#2) */
 barChart('#sharedChart',DATA.regions.filter(r=>r.shared>0)
-  .map(r=>({lab:r.region,val:r.shared,color:'#2E6FB0'}))
+  .map(r=>({lab:r.region,val:r.shared,disp:`${r.shared} (${r.total?Math.round(100*r.shared/r.total):0}%)`,color:'#2E6FB0'}))
   .sort((a,b)=>b.val-a.val));
 
 /* companion: regions by partner count (more partners = red, like stakeholder chart) */
 (function(){
   const PC_HEX={0:'#D64545',1:'#D8DAD9',2:'#F3C06B',3:'#3E8E4F',4:'#2E8B4E'}; // 0 none=red · 1 · 2 · 3 & >3=green
-  const LAB={0:'No partner',1:'1 partner',2:'2 partners',3:'3 partners',4:'>3 partners'};
+  const LAB={0:'No partner',1:'1 partner',2:'2 partners',3:'3 partners',4:'All 4 partners'};
   const buckets={0:[],1:[],2:[],3:[],4:[]};
-  DATA.regions.forEach(r=>{const p=r.partners_present||0; buckets[p>3?4:p].push(r.region);});
+  DATA.regions.forEach(r=>{const p=r.partners_present||0; buckets[Math.min(p,4)].push(r.region);});
   // regions with no partner include Zanzibar regions that aren't in the programme data
   const dataRegs=new Set(DATA.regions.map(r=>r.region));
   GEO.features.forEach(f=>{const nm=f.properties.reg_name; if(!dataRegs.has(nm)) buckets[0].push(nm);});
