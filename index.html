@@ -42,6 +42,12 @@ body{margin:0;background:var(--paper);color:#132D26;
 .card.active{border-color:#4FA58C;box-shadow:0 0 0 2px rgba(79,165,140,.35);}
 .card .more{font-size:10px;color:#1B6E5A;background:#EAF2EE;display:inline-block;margin-top:8px;padding:2px 9px;border-radius:10px;font-weight:700;}
 .updated{display:inline-block;background:#1B6E5A;color:#fff;font-weight:700;font-size:12px;padding:5px 13px;border-radius:20px;margin:0 0 14px;letter-spacing:.01em;}
+.review-banner{display:flex;align-items:flex-start;gap:11px;background:#FFF8E8;border:1px solid #E8C978;border-left:4px solid #C2912B;border-radius:10px;padding:12px 13px;margin:0 0 16px;color:#5D491B;box-shadow:0 2px 8px rgba(93,73,27,.06);}
+.review-banner .mark{width:9px;height:9px;border-radius:50%;background:#C2912B;flex:none;margin-top:5px;box-shadow:0 0 0 4px rgba(194,145,43,.14);}
+.review-banner .copy{flex:1;min-width:0;font-size:12.5px;line-height:1.5;}
+.review-banner strong{display:block;color:#59430F;font-size:13px;margin-bottom:2px;}
+.review-banner button{flex:none;border:0;background:transparent;color:#7A6428;width:28px;height:28px;border-radius:6px;font-size:20px;line-height:1;cursor:pointer;padding:0;margin:-3px -4px 0 0;}
+.review-banner button:hover,.review-banner button:focus-visible{background:#F5E8C4;color:#59430F;outline:2px solid #C2912B;outline-offset:1px;}
 .tbl-more{padding:10px;text-align:center;font-weight:700;font-size:12.5px;color:#2E6FB0;cursor:pointer;border-top:1px solid var(--line2);background:#F7FAF9;}
 .tbl-more:hover{background:#EEF5F2;}
 .tctl{display:flex;gap:9px;align-items:center;flex-wrap:wrap;padding:11px 14px;border-bottom:1px solid var(--line2);background:#F7FAF9;}
@@ -204,6 +210,11 @@ svg{display:block;width:100%;height:auto;}
 
   <div class="hr"></div>
   <div class="updated">Last update: mid-August 2026</div>
+  <div class="review-banner" id="reviewBanner" role="status">
+    <span class="mark" aria-hidden="true"></span>
+    <div class="copy"><strong>Data review in progress</strong>This dashboard is being reviewed and validated. Figures may change as source lists, school matches and coverage calculations are confirmed.</div>
+    <button id="reviewBannerClose" type="button" aria-label="Dismiss data review notice" title="Dismiss notice">&times;</button>
+  </div>
   <div class="cards" id="cards"></div>
   <div class="notes">
     <p id="noteSummary" class="notebold"></p>
@@ -860,4 +871,6 @@ barChart('#sharedChart',DATA.regions.filter(r=>r.shared>0)
 d3.select('#footnote').html(
   `Coverage and totals are based on updated partner school lists matched against the national secondary-school registry. `+
   `On the map, amber marks regions or districts with no programme presence (0 partners); the teal shades show 1, 2 and 3 partners.`);
+
+d3.select('#reviewBannerClose').on('click',()=>d3.select('#reviewBanner').style('display','none'));
 </script>
